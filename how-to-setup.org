@@ -31,3 +31,10 @@ more information including valid format see:
 参考：https://stackoverflow.com/a/70704094/1000254
 ** ETCD集群的参数配置问题
 问题描述：
+采用Stack-ETCD的模式时，通过kubeadm join加入的额外control plane节点的etcd无法成功加入集群。
+
+原因：
+默认情况下kubeadm join命令没有传递参数 ~--apiserver-advertise-address=$ADVERTISE_IP~, 导致etcd在启动时使用默认网卡的IP作为peer ip加入集群，默认使用的网络设备为 ~eth0~, 在vagrant启动的虚拟机中，该网卡是nat设备，每台机器的该网卡的IP都是一样的，因此导致额外的ETCD节点无法加入集群中。
+
+解决办法：
+每台control plane节点加入时，通过 ~--apiserver-advertise-address=$ADVERTISE_IP~ 将本机的public IP或者private IP传递进去。见 [[file:scripts/master.sh][master.sh]] 脚本。
