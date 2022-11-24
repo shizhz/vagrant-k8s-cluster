@@ -1,1 +1,1 @@
-kubeadm join k8s.shizhz.me:6443 --token tb2j0r.4p3v67k4jomjt6ex --discovery-token-ca-cert-hash sha256:43a3c67c69501324ba24aafdfedc75aef808ac8cec3d801753f77a98590cf942 --control-plane --certificate-key 2f00fc0ed6174b00ed011c30474a976fa0f1056bb7ac9ba7077a20e055a5592b
+kubeadm join k8s.shizhz.me:6443 --token sg70wz.vl1xwsd4ht6hj0cd --discovery-token-ca-cert-hash sha256:16214b97fcef64c644edb484c578d37f77bfdd5f180bc94dcc6fe36962e733f7 --control-plane --certificate-key 4c7f5786ac967bea742d1f2c95ee0f9055f0fd6258a1971f1eb79fbc1e173943 $@

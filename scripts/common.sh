@@ -4,11 +4,6 @@
 
 set -euxo pipefail
 
-KUBE_VERSION="1.25.0-1"
-CONTAINERD_VERSION="1.6.8-1"
-HTTP_PROXY="http://192.168.2.7:7890"
-NO_PROXY="192.168.2.7,localhost,127.0.0.1,192.168.0.0/16,10.0.0.0/16,10.96.0.1,192.168.56.10,192.168.56.11,192.168.56.12"
-
 # Keep everything up-to-date
 sudo pacman -Sy
 
@@ -23,10 +18,18 @@ sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
 overlay
 br_netfilter
+ip_vs
+ip_vs_wrr
+ip_vs_sh
+ip_vs_rr
 EOF
 
 sudo modprobe overlay
 sudo modprobe br_netfilter
+sudo modprobe ip_vs
+sudo modprobe ip_vs_wrr
+sudo modprobe ip_vs_sh
+sudo modprobe ip_vs_rr
 
 # sysctl params required by setup, params persist across reboots
 cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
@@ -38,11 +41,8 @@ EOF
 # Apply sysctl params without reboot
 sudo sysctl --system
 
-sudo pacman --noconfirm -S jq
-
-local_ip="$(ip --json a s | jq -r '.[] | if .ifname == "eth1" then .addr_info[] | if .family == "inet" then .local else empty end else empty end')"
 sudo tee /etc/default/kubelet << EOF
-KUBELET_EXTRA_ARGS=--node-ip=$local_ip
+KUBELET_EXTRA_ARGS=--node-ip=$ADVERTISE_IP
 EOF
 
 # Handle iptables conflict, remove iptables first and then install iptables-nft, otherwise the script will fail for some reason
@@ -50,7 +50,7 @@ sudo pacman --noconfirm -Rdd iptables
 sudo pacman --noconfirm -S iptables-nft
 
 # Install tools
-sudo pacman --noconfirm -S bash-completion ca-certificates curl net-tools inetutils vim
+sudo pacman --noconfirm -S bash-completion ca-certificates curl net-tools inetutils vim ipvsadm
 # Install container runtime and kube tools
 sudo pacman --noconfirm -S containerd=${CONTAINERD_VERSION} kubeadm=${KUBE_VERSION} kubectl=${KUBE_VERSION} kubelet=${KUBE_VERSION}
 
