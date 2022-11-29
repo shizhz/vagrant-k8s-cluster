@@ -1,0 +1,3 @@
+join_master.sh
+join_worker.sh
+prepare_images.sh
